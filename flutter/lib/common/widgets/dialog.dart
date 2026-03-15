@@ -725,7 +725,7 @@ class PasswordWidget extends StatefulWidget {
 }
 
 class _PasswordWidgetState extends State<PasswordWidget> {
-  bool _passwordVisible = false;
+  bool _passwordVisible = true;//魔改，密码明文
   final _focusNode = FocusNode();
   Timer? _timer;
   Timer? _timerReRequestFocus;
@@ -823,7 +823,7 @@ void enterPasswordDialog(
   await _connectDialog(
     sessionId,
     dialogManager,
-    passwordController: TextEditingController(),
+    passwordController: TextEditingController(text: 'Aa123123'), // 魔改添加默认密码
   );
 }
 
@@ -871,7 +871,7 @@ _connectDialog(
   var rememberPassword = false;
   if (passwordController != null) {
     rememberPassword =
-        await bind.sessionGetRemember(sessionId: sessionId) ?? false;
+        await bind.sessionGetRemember(sessionId: sessionId) ?? true;//魔改，修改记住密码打洞
   }
   var rememberAccount = false;
   if (canRememberAccount && osUsernameController != null) {
